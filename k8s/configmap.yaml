@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: odilia-config
+  namespace: odilia
+data:
+  redis-primary.conf: |
+    protected-mode no
+    port 6379
+    appendonly yes
+  redis-replica.conf: |
+    protected-mode no
+    port 6379
+    replicaof redis-server 6379
+  sentinel.conf: |
+    port 5000
+    sentinel monitor mymaster redis-server 6379 2
+    sentinel down-after-milliseconds mymaster 5000
+    sentinel failover-timeout mymaster 60000
+    sentinel parallel-syncs mymaster 1
+

@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-server
+  namespace: odilia
+  labels:
+    app: redis-server
+    tier: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  selector:
+    app: redis-server
+    tier: cache
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-server
+  namespace: odilia
+  labels:
+    app: redis-server
+    tier: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-server
+      tier: cache
+  template:
+    metadata:
+      labels:
+        app: redis-server
+        tier: cache
+    spec:
+      containers:
+        - name: redis-server
+          image: redis:4.0.2
+          command: ["redis-server", "/etc/redis/redis.conf"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis-primary.conf
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: redis-config
+          configMap:
+            name: odilia-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-redis01
+  namespace: odilia
+  labels:
+    app: odilia-redis01
+    tier: cache-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-redis01
+      tier: cache-replica
+  template:
+    metadata:
+      labels:
+        app: odilia-redis01
+        tier: cache-replica
+    spec:
+      containers:
+        - name: odilia-redis01
+          image: redis:4.0.2
+          command: ["redis-server", "/etc/redis/redis.conf"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis-replica.conf
+      volumes:
+        - name: redis-config
+          configMap:
+            name: odilia-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-redis02
+  namespace: odilia
+  labels:
+    app: odilia-redis02
+    tier: cache-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-redis02
+      tier: cache-replica
+  template:
+    metadata:
+      labels:
+        app: odilia-redis02
+        tier: cache-replica
+    spec:
+      containers:
+        - name: odilia-redis02
+          image: redis:4.0.2
+          command: ["redis-server", "/etc/redis/redis.conf"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis-replica.conf
+      volumes:
+        - name: redis-config
+          configMap:
+            name: odilia-config
+

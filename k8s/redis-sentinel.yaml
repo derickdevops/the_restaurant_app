@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-redis-sentinel01
+  namespace: odilia
+  labels:
+    app: odilia-redis-sentinel01
+    tier: cache-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-redis-sentinel01
+      tier: cache-sentinel
+  template:
+    metadata:
+      labels:
+        app: odilia-redis-sentinel01
+        tier: cache-sentinel
+    spec:
+      containers:
+        - name: odilia-redis-sentinel01
+          image: redis:4.0.2
+          command: ["redis-sentinel", "/etc/redis/sentinel.conf"]
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: sentinel-config
+              mountPath: /etc/redis/sentinel.conf
+              subPath: sentinel.conf
+      volumes:
+        - name: sentinel-config
+          configMap:
+            name: odilia-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-redis-sentinel02
+  namespace: odilia
+  labels:
+    app: odilia-redis-sentinel02
+    tier: cache-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-redis-sentinel02
+      tier: cache-sentinel
+  template:
+    metadata:
+      labels:
+        app: odilia-redis-sentinel02
+        tier: cache-sentinel
+    spec:
+      containers:
+        - name: odilia-redis-sentinel02
+          image: redis:4.0.2
+          command: ["redis-sentinel", "/etc/redis/sentinel.conf"]
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: sentinel-config
+              mountPath: /etc/redis/sentinel.conf
+              subPath: sentinel.conf
+      volumes:
+        - name: sentinel-config
+          configMap:
+            name: odilia-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-redis-sentinel03
+  namespace: odilia
+  labels:
+    app: odilia-redis-sentinel03
+    tier: cache-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-redis-sentinel03
+      tier: cache-sentinel
+  template:
+    metadata:
+      labels:
+        app: odilia-redis-sentinel03
+        tier: cache-sentinel
+    spec:
+      containers:
+        - name: odilia-redis-sentinel03
+          image: redis:4.0.2
+          command: ["redis-sentinel", "/etc/redis/sentinel.conf"]
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: sentinel-config
+              mountPath: /etc/redis/sentinel.conf
+              subPath: sentinel.conf
+      volumes:
+        - name: sentinel-config
+          configMap:
+            name: odilia-config
+
