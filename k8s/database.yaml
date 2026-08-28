@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yelb-db
+  namespace: odilia
+  labels:
+    app: yelb-db
+    tier: backenddb
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: yelb-db
+    tier: backenddb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: yelb-db-data
+  namespace: odilia
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yelb-db
+  namespace: odilia
+  labels:
+    app: yelb-db
+    tier: backenddb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yelb-db
+      tier: backenddb
+  template:
+    metadata:
+      labels:
+        app: yelb-db
+        tier: backenddb
+    spec:
+      containers:
+        - name: yelb-db
+          image: mreferre/yelb-db:0.5
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: yelb-db-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      volumes:
+        - name: yelb-db-data
+          persistentVolumeClaim:
+            claimName: yelb-db-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-db-replication01
+  namespace: odilia
+  labels:
+    app: odilia-db-replication01
+    tier: backenddb-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-db-replication01
+      tier: backenddb-replica
+  template:
+    metadata:
+      labels:
+        app: odilia-db-replication01
+        tier: backenddb-replica
+    spec:
+      containers:
+        - name: odilia-db-replication01
+          image: mreferre/yelb-db:0.5
+          ports:
+            - containerPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-db-replication02
+  namespace: odilia
+  labels:
+    app: odilia-db-replication02
+    tier: backenddb-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-db-replication02
+      tier: backenddb-replica
+  template:
+    metadata:
+      labels:
+        app: odilia-db-replication02
+        tier: backenddb-replica
+    spec:
+      containers:
+        - name: odilia-db-replication02
+          image: mreferre/yelb-db:0.5
+          ports:
+            - containerPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odilia-db-replication03
+  namespace: odilia
+  labels:
+    app: odilia-db-replication03
+    tier: backenddb-replica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: odilia-db-replication03
+      tier: backenddb-replica
+  template:
+    metadata:
+      labels:
+        app: odilia-db-replication03
+        tier: backenddb-replica
+    spec:
+      containers:
+        - name: odilia-db-replication03
+          image: mreferre/yelb-db:0.5
+          ports:
+            - containerPort: 5432
+
